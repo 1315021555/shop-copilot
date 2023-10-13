@@ -34,7 +34,7 @@ import User from './views/User.vue'
 
 .el-tabs__item.is-top{
 
-  margin-right: 140px;
+  margin-right: 220px;
 }
 .el-tabs__header.is-top{
   transform: translateX(200px);

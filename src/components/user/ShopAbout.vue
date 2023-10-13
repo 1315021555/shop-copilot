@@ -118,7 +118,7 @@ div.shopWrap {
   }
 
   .goodsList {
-    height: 450px;
+    height: 670px;
     display: flex;
     justify-content: center;
     flex-wrap: wrap;

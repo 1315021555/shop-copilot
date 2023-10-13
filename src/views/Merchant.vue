@@ -53,7 +53,7 @@
               </el-tab-pane>
               <!-- 预设问答结束 -->
 
-              <el-tab-pane label="主题">
+          <!--     <el-tab-pane label="主题">
                 <el-form label-position="top" label-width="80px" :model="chatStyle">
                   <el-form-item label="主题">
                     <el-radio-group v-model="theme">
@@ -66,7 +66,7 @@
                 </el-form>
                 <button class="finishBtn" @click="showSaveSuccuess">完成</button>
               </el-tab-pane>
-
+ -->
 
               <el-tab-pane label="聊天风格">
 
@@ -127,29 +127,6 @@
                   </el-form-item>
                 </el-form>
 
-                <p><strong>自定义信息</strong></p>
-                <el-divider></el-divider>
-                <el-form label-position="top" label-width="80px" :model="shopInfo">
-                  <el-form-item label="尺码表">
-                  </el-form-item>
-                  <!-- <el-input v-model="shopInfo.shopDesc"></el-input> -->
-                  <el-upload
-                    class="upload-demo"
-                    drag
-                    action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-                    multiple
-                  >
-                    <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-                    <div class="el-upload__text">
-                      Drop file here or <em>click to upload</em>
-                    </div>
-                    <template #tip>
-                      <div class="el-upload__tip">
-                        支持excel
-                      </div>
-                    </template>
-                  </el-upload>
-                </el-form>
                 <button class="finishBtn" @click="showSaveSuccuess">完成</button>
               </el-tab-pane>
 
@@ -180,6 +157,13 @@
                       </template>
                     </el-upload>
                   </el-form-item>
+
+                  <p><strong>自定义信息</strong></p>
+                <el-divider></el-divider>
+                <!-- <el-input v-model="shopInfo.shopDesc"></el-input> -->
+            
+                  <LuckySheet ></LuckySheet>
+
                   <el-button class="deleteBtn"
                       type="danger"
                       @click="goodsInfo.splice(index,1)">
@@ -206,6 +190,7 @@ import { ElMessage } from 'element-plus'
 import { UploadFilled } from '@element-plus/icons-vue'
 import { ref,reactive } from 'vue';
 import ChatWrap from '../components/common/ChatWrap.vue';
+import LuckySheet from '../components/merchant/LuckySheet.vue';
 
 
 let activeName = ref('first')
