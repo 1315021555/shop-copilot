@@ -2,9 +2,8 @@
 
 <div class="wrap">
     <div class="sideBar">
-        <div class="logo">
+        <img class="logo" src="../assets/img/logo.png">
             
-        </div>
 
         <div class="navList">
             <div 
@@ -73,16 +72,16 @@ const useStoreMain = useMain()
 /* 商家列表 */
 let chatList = reactive([
     {
-        headPicUrl:'https://files.codelife.cc/icons/aibot.svg',
-        shopName:'shop1'
+        headPicUrl:'https://img0.baidu.com/it/u=1426957999,1893315538&fm=253&fmt=auto&app=138&f=JPEG?w=591&h=362',
+        shopName:'李宁 LI-NING'
     },
     {
-        headPicUrl:'https://files.codelife.cc/icons/aibot.svg',
-        shopName:'shop2'
+        headPicUrl:'https://img0.baidu.com/it/u=1670206633,2376460977&fm=253&fmt=auto&app=138&f=JPEG?w=600&h=352',
+        shopName:'安踏'
     },
     {
-        headPicUrl:'https://files.codelife.cc/icons/aibot.svg',
-        shopName:'shop3'
+        headPicUrl:'https://img1.baidu.com/it/u=151839232,2450048441&fm=253&fmt=auto&app=138&f=JPEG?w=667&h=500',
+        shopName:'华为'
     }
 ])
 
@@ -100,7 +99,7 @@ function clickGood(goodInfo:object){
     /* 跳转路由 */
     router.push({ 
         name:'goodsDetail',
-        
+
     })
 }
 </script>
@@ -118,11 +117,11 @@ div.wrap {
         background-color: #36404A;
         
         .logo {
-            width: 70px;
-            height: 70px;
+            width: 90px;
+            height: 90px;
             background-color: #666;
             border-radius: 50%;
-            margin: 20px 0 100px 20px ;
+            margin: 50px auto ;
         }
 
         .navList{

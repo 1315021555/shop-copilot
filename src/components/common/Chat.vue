@@ -7,7 +7,7 @@
   <!-- Prompt Messages -->
   <div
     ref="msgListDiv"
-    class="flex-1 space-y-6 overflow-y-auto rounded-xl bg-slate-200 p-4 text-sm leading-6 text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-300 sm:text-base sm:leading-7"
+    class="flex-1 space-y-6 overflow-y-auto rounded-xl bg-slate-100 p-4 text-sm leading-6 text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-300 sm:text-base sm:leading-7"
   >
     <!-- v-for strat -->
     <div
@@ -15,27 +15,43 @@
       :key="index"
       :class="{
         'flex':true,
-        'items-start':msg.direction === 'right',
-        'flex-row-reverse':msg.direction === 'left'
+        'items-start':msg.direction === 'left',
+        'flex-row-reverse':msg.direction === 'right'
       }">
-      <!-- 头像 -->
+      <!-- 客户头像 -->
       <img
-        class="mr-2 h-8 w-8 rounded-full"
+        v-if="msg.direction === 'right'"
+        class="mr-2 h-10 w-10 rounded-full"
         :class="{
-          'mr-2':msg.direction === 'right',
-          'ml-2':msg.direction === 'left'
+          'mr-2':msg.direction === 'left',
+          'ml-2':msg.direction === 'right'
         }"
-        src="https://dummyimage.com/128x128/363536/ffffff&text=J"
+        src="../../assets/img/logo.png"
+      />
+      <!-- 客服头像 -->
+      <img
+        v-if="msg.direction === 'left'"
+        class="mr-2 h-10 w-10 rounded-full"
+        :class="{
+          'mr-2':msg.direction === 'left',
+          'ml-2':msg.direction === 'right'
+        }"
+        src="	https://img0.baidu.com/it/u=1426957999,1893315538&fm=253&fmt=auto&app=138&f=JPEG?w=591&h=362"
       />
       <div
+        
         class="flex rounded-b-xl rounded-tr-xl bg-slate-50 p-4 dark:bg-slate-800 sm:max-w-md md:max-w-2xl"
+        :class="{
+          'dark:bg-slate-500':msg.direction === 'left',
+          'dark:bg-slate-1000':msg.direction === 'right'
+        }"
       >
       <p>{{msg.content}}</p>
 
       </div>
       <!-- 评价按钮列表 -->
       <div
-        v-show="msg.direction === 'right'"
+        v-show="msg.direction === 'left'"
         class="ml-3 mt-2 flex flex-col-reverse gap-2 text-slate-500 sm:flex-row"
       >
         <button class="hover:text-blue-600" type="button">
@@ -254,9 +270,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted,ref,nextTick } from 'vue';
+import { onMounted,ref,nextTick,watch} from 'vue';
 import { SingleChatMessage } from '../../types/interface';
-
 
 
 /* props */
@@ -264,6 +279,12 @@ const props = defineProps<{
   msgList:SingleChatMessage[]
 }>()
 
+watch(props.msgList,(v)=>{
+  console.log(v);
+  nextTick(()=>{
+    msgListDiv.value.scrollTop = msgListDiv.value.scrollHeight
+  })
+})
 
 /* variable */
 let prompt = ref('')

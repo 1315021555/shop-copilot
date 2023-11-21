@@ -1,10 +1,10 @@
 <template>
 <div class="goodCardWrap">
-    <img src="../../assets/img/picture.svg" alt="" class="pic">
+    <img :src="props.goodInfo.coverImgUrl" alt="" class="pic">
     <div class="info">
         <p class="name">{{ props.goodInfo.goodName }}</p>
         ￥<span class="price">{{ goodInfo.price }}</span>
-        <span class="saledNum">已售1000+</span>
+        <span class="saledNum">已售{{goodInfo.saled}}+</span>
         <el-tooltip content="咨询此商品" placement="top">
             <img @click.stop="consultGood" class="consult" src="../../assets/img/consult.svg" alt="">
         </el-tooltip>
@@ -25,7 +25,7 @@ const userStore = useUserStore();
 
 // 询问商品
 function consultGood(){
-    userStore.updateConsultGoodId(props.goodInfo.goodId)
+    userStore.updateConsultGoodName(props.goodInfo.goodName)
 }
 
 </script>
@@ -53,7 +53,11 @@ div.goodCardWrap {
     position: relative;
     p.name {
         font-size: 16px;
-
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        margin: 10px 0;
+        font-weight: bold;
 
     }
 

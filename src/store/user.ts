@@ -5,8 +5,8 @@ export const useUserStore = defineStore('useUserStore',{
         return {
             /* 当前咨询的商品id */
             consultCounter:0,
-            curConsultGoodId:0,
-
+            curConsultGoodName:'',
+            curGoodDetail:{},
         }
     },
 
@@ -15,8 +15,8 @@ export const useUserStore = defineStore('useUserStore',{
     },
 
     actions:{
-        updateConsultGoodId(id:number){
-            this.curConsultGoodId = id
+        updateConsultGoodName(goodName:string){
+            this.curConsultGoodName = goodName
             this.consultCounter++;
         }
     }

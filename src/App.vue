@@ -34,10 +34,10 @@ import User from './views/User.vue'
 
 .el-tabs__item.is-top{
 
-  margin-right: 220px;
+  margin-right: 70px;
 }
 .el-tabs__header.is-top{
-  transform: translateX(200px);
+  transform: translateX(130px);
 }
 
 .el-tabs__content{

@@ -3,12 +3,18 @@ import { createRouter, createWebHistory, createWebHashHistory,RouteRecordRaw } f
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    name: 'user',
+    name: 'login',
     // alias: ['/home','/home2'],   // 别名，可以定义很多个
-    component: () => import('../views/User.vue'),
+    component: () => import('../views/Login.vue'),
+  
+  },
+  {
+    path:'/user',
+    name:'user',
+    component:()=> import('../views/User.vue'),
     children:[
       {
-        path:'/',
+        path:'',
         name:'shopAbout',
         component:()=> import('../components/user/ShopAbout.vue')
       },
@@ -18,8 +24,6 @@ const routes: Array<RouteRecordRaw> = [
         component:()=> import('../components/user/GoodsDetail.vue')
       }
     ]
-    // 重定向
-    // redirect: '/welcome',
   },
 
   {
