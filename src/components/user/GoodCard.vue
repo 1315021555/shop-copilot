@@ -1,10 +1,10 @@
 <template>
 <div class="goodCardWrap">
-    <img :src="props.goodInfo.coverImgUrl" alt="" class="pic">
+    <img :src="props.goodInfo?.merchandiseCarouselList[0]?.imageUrl || 'https://img0.baidu.com/it/u=1426957999,1893315538&fm=253&fmt=auto&app=138&f=JPEG?w=591&h=362'" alt="" class="pic">
     <div class="info">
-        <p class="name">{{ props.goodInfo.goodName }}</p>
-        ￥<span class="price">{{ goodInfo.price }}</span>
-        <span class="saledNum">已售{{goodInfo.saled}}+</span>
+        <p class="name">{{ props.goodInfo.merchandise.merchandiseName }}</p>
+        ￥<span class="price">{{ goodInfo.merchandise.price }}</span>
+        <span class="saledNum"><!-- 已售{{goodInfo.saled}}+ --></span>
         <el-tooltip content="咨询此商品" placement="top">
             <img @click.stop="consultGood" class="consult" src="../../assets/img/consult.svg" alt="">
         </el-tooltip>
@@ -25,7 +25,7 @@ const userStore = useUserStore();
 
 // 询问商品
 function consultGood(){
-    userStore.updateConsultGoodName(props.goodInfo.goodName)
+    userStore.updateConsultGoodName(props.goodInfo.merchandise.merchandiseName)
 }
 
 </script>

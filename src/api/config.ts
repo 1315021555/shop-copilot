@@ -14,10 +14,11 @@ function getToken(){
 
 //请求拦截器
 requests.interceptors.request.use((config)=>{
+    console.log(config);
     //config配置对象，里面有一个属性很重要——headers请求头
-    if (getToken()){
+    if (typeof (getToken()) == 'string'){
         //携带token
-        config.headers.Authorization = getToken();
+        config.headers.Authorization = "Bearer "+getToken();
     }
     return config;
 },error=>{

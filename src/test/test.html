@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Sse测试文档</title>
+</head>
+<body>
+<div>sse测试</div>
+<div id="result"></div>
+</body>
+</html>
+<script>
+    // 注册事件
+    const btnNode = document.querySelector("#btn");
+    const h1Node = document.getElementById("h1")
+    const query = '你好'
+    var source = new EventSource(`http://luke.host:10000/chat/?merchantId=7&query=${query}&userId=1`);
+    source.onmessage = function (event) {
+        text = document.getElementById('result').innerText;
+        text += '\n' + event.data;
+        document.getElementById('result').innerText = text;
+    };
+    source.onopen = function (event) {
+        text = document.getElementById('result').innerText;
+        text += '\n 开启: ';
+        console.log(event);
+        document.getElementById('result').innerText = text;
+    };
+    source.onerror = function (event) {
+        console.log('error',event);
+    };
+</script>
+
+
+

@@ -1,6 +1,12 @@
 import { createRouter, createWebHistory, createWebHashHistory,RouteRecordRaw } from 'vue-router'
 
 const routes: Array<RouteRecordRaw> = [
+  //匹配数字路径
+  {
+    path:'/shop/:shopId',
+    name:'shop',
+    component: () => import('../views/Login.vue'),
+  },
   {
     path: '/',
     name: 'login',

@@ -72,15 +72,29 @@
 import { ElMessage } from 'element-plus'
 import { ref, onMounted} from 'vue'
 import router from '../router/index'
-import { UserRequester } from '../api/api'
+import { MerchantRequester, UserRequester } from '../api/api'
+import { useUserStore } from '../store/user'
+import { useMerchantStore } from '../store/merchant'
+import { defaultMerchantInfo } from '@/api/reqModel'
+import { useCommonStore } from '@/store/common'
+const userStore = useUserStore();
+const merchantStore = useMerchantStore();
+const commonStore = useCommonStore();
+
 
 let registeRole = ref('')
 let loginRole = ref('')
-let username = ref('')
-let password = ref('')
+let username = ref('wzl')
+let password = ref('123456')
+let curShopId = ref(1)
 
 onMounted(()=>{
     switchTab();
+    // 设置默认商家为18 :李宁
+    // 截取当前url最后的字段
+    
+    curShopId.value = parseInt(router.currentRoute.value.params.shopId || '18' as any)
+    console.log(curShopId.value);
 })
 
 function register(){
@@ -92,19 +106,51 @@ function register(){
         })
         return
     }
-    UserRequester.Registe({
-        nickname:'test',
-        password:'123',
-        username:'123',
-        email:'123'
-    }).then((res)=>{
-        console.log(res)
-    }).catch((err)=>{
-        console.log(err)
-    })
+
+    else if (registeRole.value == 'user'){
+        UserRequester.Registe({
+            password:password.value,
+            username:username.value,
+            avatarBase64:'1'
+        }).then((res)=>{
+            console.log(res)
+            ElMessage({
+                message:'用户注册成功',
+                type:'success'
+        })
+        }).catch((err)=>{
+            console.log(err)
+            ElMessage({
+                message:'用户注册失败',
+                type:'error'
+            })
+        })
+        
+    }
+
+    // 商家注册
+    else if (registeRole.value == 'shop'){
+        MerchantRequester.Registe({
+            ...defaultMerchantInfo,
+            password:password.value,
+            username:username.value,
+        }).then((res)=>{
+            console.log('注册成功!',res)
+            ElMessage({
+                message:'商家注册成功',
+                type:'success'
+            })
+        }).catch((err)=>{
+            console.log('注册失败!',err)
+            ElMessage({
+                message:'商家注册失败',
+                type:'error'
+            })
+        })
+    }
 }
 
-function login(){
+async function login(){
     // 确认是否选择了商家或用户登录
     if (loginRole.value == ''){
         ElMessage({
@@ -114,37 +160,92 @@ function login(){
         return
     }
     
-    UserRequester.Login({
-        password:password.value,
-        username:username.value
-    }).then((res)=>{
-        console.log(res)
-    }).catch((err)=>{
-        console.log(err)
-    })
-    if (username.value.toLocaleLowerCase() == 'user' && password.value != ''){
-
-        ElMessage({
-            message: '用户登录成功',
-            type: 'success',
-        })
-
-        router.push('/user')
+    // 选择用户登录
+    else if (loginRole.value == 'user'){
+        try {
+            UserRequester.Login({
+                password:password.value,
+                username:username.value
+            }).then(async (res:any)=>{
+                console.log(res.accessToken.toString());
+                userStore.userId = res.info.userId
+                localStorage.setItem('token',res.accessToken.toString())
+                console.log(res);
+                // 获取会话列表
+                userStore.sessionList = await UserRequester.GetSessionList() as any;
+                if (!userStore.sessionList.find((item:any)=>{
+                    return item.chatSession.merchantId == curShopId.value
+                })){
+                    // 如果没有当前会话则创建当前会话
+                    console.log('重新创建');
+                    let curSession  = await UserRequester.CreateSession(curShopId.value);
+                    userStore.sessionList.push(curSession); 
+                }
+                userStore.lastestMerchantId = curShopId.value
+                // 选中当前会话
+                userStore.curViewMerchantIndex = userStore.sessionList.findIndex((item:any)=>{
+                    return  item.chatSession.merchantId == curShopId.value
+                })
+                commonStore.curRole = 'user'
+                // 获取完跳转页面
+                router.push('/user')
+                ElMessage({
+                    message:'用户登录成功',
+                    type:'success'
+                })
+            }).catch(err=>{
+                console.log(err);
+                ElMessage({
+                    message:'用户登录失败',
+                    type:'error'
+                })
+            })
+        }
+        catch (err) {
+            console.log('err',err);
+            ElMessage({
+                message:'用户名或密码错误',
+                type:'error'
+            })
+        }
         
     }
-    else if (username.value.toLocaleLowerCase() == 'lining-merchant' && password.value != ''){
-        ElMessage({
-            message: '商家-李宁登录成功',
-            type: 'success',
-        })
-        router.push('/merchant')
 
-    }
-
-    else{
-        ElMessage({
-            message: '账号或密码错误',
-            type: 'error',
+    // 选择商家登录
+    else if (loginRole.value == 'shop'){
+        //test 
+        // username.value = 'lining'
+        MerchantRequester.Login({
+            password:password.value,
+            username:username.value
+        }).then(async (res:any)=>{
+            console.log(res);
+            merchantStore.mechantId = res.info.userId
+            // 设置token
+            localStorage.setItem('token',res.accessToken.toString())
+            // 更新商家信息
+            let merchantInfo:any  = await MerchantRequester.GetMerchantInfoById({
+                id:res.info.userId
+            })
+            merchantStore.merchantInfo = merchantInfo
+            // 获取会话列表
+            MerchantRequester.GetSessionList().then((res:any)=>{
+                console.log('商家会话列表',res);
+                merchantStore.sessionList = res
+            }).then(()=>{
+                commonStore.curRole = 'merchant'
+                router.push('/merchant')
+                ElMessage({
+                    message:'商家登录成功',
+                    type:'success'
+                })
+            })
+        }).catch((err)=>{
+            console.log(err);
+            ElMessage({
+                message:'商家登录失败，账号或密码错误',
+                type:'error'
+            })
         })
     }
 }
@@ -161,7 +262,6 @@ function switchTab(){
     let allButtons = document.querySelectorAll(".submit");
 
     let getButtons = (e:any) => e.preventDefault()
-    console.log('111');
     let changeForm = () => {
         // 修改类名
         switchCtn?.classList.add("is-gx");
@@ -180,7 +280,6 @@ function switchTab(){
     }
     // 点击切换
     let shell = () => {
-        console.log('shell');
         for (var i = 0; i < allButtons.length; i++)
             allButtons[i].addEventListener("click", getButtons);
         for (var i = 0; i < switchBtn.length; i++)
@@ -475,4 +574,4 @@ body {
         width: 500px;
     }
 }
-</style> 作者：山羊の前端小窝 https://www.bilibili.com/read/cv21632661/ 出处：bilibili
+</style>

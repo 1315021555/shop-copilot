@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+
+<script>
+
+    // 创建一个 EventSource 对象，指向服务器的 SSE 端点
+// var eventSource = new EventSource('http://luke.host:10000/chat/',{
+//     method: 'POST',
+//     headers: {
+//         'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhY2Nlc3MgdG9rZW4iLCJVc2VySW5mbyI6eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoid3psIiwic3RhdHVzIjoiQ3VzdG9tZXIifSwianRpIjoiYTIwODU0NTEtNzViMy00NTg5LWFjNDQtMzQ3NjAxYzUyMTUzIn0.AJFzKodYR0nmWoYsCS-ENkpqDjIKOhr4F44BukB_Hfg', // 添加 token
+//         'Content-Type': 'application/json' // 设置请求头
+//     }
+// });
+
+// // 监听服务器端推送的消息
+// eventSource.onmessage = function(event) {
+//   // 处理从服务器收到的消息
+//   console.log('Received message:', event.data);
+// };
+
+// // 监听 SSE 连接的错误
+// eventSource.onerror = function(error) {
+//   // 处理连接错误
+//   console.error('SSE error:', error);
+// };
+
+// // 监听 SSE 连接的关闭
+// eventSource.onclose = function() {
+//   // 处理连接关闭
+//   console.log('SSE connection closed.');
+// };
+
+var data = {
+    query:'你好',
+    merchantId:7
+};
+
+var requestOptions = {
+    method: 'POST',
+    headers: {
+       /*  'User-Agent': 'Apifox/1.0.0 (https://apifox.com)', */
+        'Content-Type': 'application/json',
+    'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhY2Nlc3MgdG9rZW4iLCJVc2VySW5mbyI6eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoid3psIiwic3RhdHVzIjoiQ3VzdG9tZXIifSwianRpIjoiYTIwODU0NTEtNzViMy00NTg5LWFjNDQtMzQ3NjAxYzUyMTUzIn0.AJFzKodYR0nmWoYsCS-ENkpqDjIKOhr4F44BukB_Hfg', // 添加 token
+
+    },
+    
+    body: JSON.stringify(data),
+    redirect: 'follow'
+};
+
+fetch("http://luke.host:10000/chat/", requestOptions)
+  .then(response => {
+    console.log('response',response);
+    return response.json()
+  })
+  .then(result => {
+    console.log(result,JSON.stringify(result))
+})
+  .catch(error => console.log('error', error));
+
+
+</script>
+</html>
