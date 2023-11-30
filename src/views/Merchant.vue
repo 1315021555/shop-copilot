@@ -157,12 +157,12 @@
               <button class="finishBtn" @click="uploadMerchantInfo">完成</button>
             </el-tab-pane>
 
-            <el-tab-pane label="商品信息">
+            <el-tab-pane label="商品信息" :key="listFlag">
               <el-form
                 label-position="top"
                 label-width="80px"
                 v-for="(good, index) in merchandiseList"
-                :key="index"
+                :key="listFlag"
                 :model="good"
               >
                 商品{{ index + 1 }}
@@ -170,13 +170,22 @@
                 <el-form-item label="商品名称">
                   <el-input v-model="good.merchandiseName"></el-input>
                 </el-form-item>
+                <el-form-item label="商品价格">
+                  <el-input v-model="good.price"></el-input>
+                </el-form-item>
                 <el-form-item label="商品描述">
                   <el-input v-model="good.description"></el-input>
+                </el-form-item>
+                <el-form-item label="目标群体">
+                  <el-input v-model="good.targeting"></el-input>
+                </el-form-item>
+                <el-form-item label="优惠策略">
+                  <el-input v-model="good.strategy"></el-input>
                 </el-form-item>
                 <el-form-item label="商品图片">
                   
                   <el-carousel :interval="4000" type="card" height="150px"  style="width: 300px;">
-                    <el-carousel-item v-for="img in good.imgList" >
+                    <el-carousel-item v-for="(img,index2) in good.imgList" :key="img.id">
                       <h3 class="small justify-center" text="2xl">
     
                       </h3>
@@ -217,7 +226,7 @@
                 <el-button
                   class="deleteBtn"
                   type="danger"
-                  @click="merchandiseList.splice(index, 1)"
+                  @click="deleteProduct(index)"
                 >
                   删除商品
                 </el-button>
@@ -261,6 +270,54 @@
       </el-tabs>
     </div>
   </div>
+
+  <el-dialog
+    v-model="dialogVisible"
+    title="添加商品"
+    width="80%"
+    :before-close="handleClose"
+  >
+    <el-form
+      label-width="100px"
+      :model="newMerchandise"
+      style="max-width: 80%"
+    >
+      <el-form-item label="商品名称">
+        <el-input v-model="newMerchandise.merchandiseName" />
+      </el-form-item>
+      <el-form-item label="价格">
+        <el-input v-model="newMerchandise.price" />
+      </el-form-item>
+      <el-form-item label="商品描述">
+        <el-input v-model="newMerchandise.description" />
+      </el-form-item>
+      <el-form-item label="目标群体">
+        <el-input v-model="newMerchandise.targeting" />
+      </el-form-item>
+      <el-form-item label="优惠策略">
+        <el-input v-model="newMerchandise.strategy" />
+      </el-form-item>
+    </el-form>
+    <!-- 图片区域 -->
+<!--     <div>
+      <input type="file" ref="fileInput2" multiple @change="handleFileUpload">
+      <el-button type="primary" @click="uploadImages">Upload Images</el-button>
+
+      <div v-if="imagePreviews.length">
+        <h2>上传图片预览</h2>
+        <div v-for="(preview, index) in imagePreviews" :key="index">
+          <img :src="preview" alt="Uploaded Image" style="max-width: 200px; margin: 5px;">
+        </div>
+      </div>
+    </div> -->
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button type="primary" @click="uploadMerchandise">
+          添加
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
@@ -276,6 +333,7 @@ import { useMerchantStore } from "@/store/merchant";
 import { defaultMerchantInfo,MerchantInfoModel } from "@/api/reqModel";
 import { imageUrlToBase64,fileToBase64 } from "@/utils/img";
 import { useCommonStore } from "@/store/common";
+import { list } from "postcss";
 const MerchantStore = useMerchantStore();
 const commonStore = useCommonStore();
 
@@ -298,7 +356,7 @@ let merchantInfo = computed(()=>{
 });
 
 // 商品信息
-let merchandiseList =  reactive([{}])
+let merchandiseList=  reactive([{}])
 
 
 // sheet 相关
@@ -354,8 +412,10 @@ function reLoadStyle(){
 
 // 预设问答以及问候语句
 function setPreset_Init(){
+  let imgBase64 = imageUrlToBase64(MerchantStore.merchantInfo.coverUrl)
   updateMerchantInfo({
     initialMsg: presetConfig.hello
+
   }).then(async res=>{
     console.log('设置问候语',res);
     const curQAList:any = await MerchantRequester.GetPresetById({
@@ -431,7 +491,9 @@ async function reloadPreset(){
   //先保存原来商家的信息用作默认值，防止不需要修改的字段被修改
 
 async function updateMerchantInfo(newInfo:any){
+
   let coverBase64 = await imageUrlToBase64(merchantInfo.value.coverUrl)
+  coverBase64 = coverBase64.split(',')[1]
   let reqInfo = {
     ...merchantInfo.value,
     coverBase64,
@@ -520,6 +582,7 @@ const uploadImgUrlList = reactive([{}])
 const handleFileInputChange = async (e: Event) => {
   const target = e.target as HTMLInputElement;
   if (target.files) {
+    // 选中一个
     const file = target.files[0];
     // 处理选中的文件，可以在这里触发上传逻辑
     console.log('选中的文件:', file);
@@ -532,18 +595,14 @@ const handleFileInputChange = async (e: Event) => {
       base64: base64String      
     }).then(async res=>{
       console.log(res);
-      let newList = merchandiseList[curUploadMerchandiseIndex.value].imgList.concat(res)
       /* 刷新界面 */
-      merchandiseList.splice(curUploadMerchandiseIndex.value,1,{
-        ...merchandiseList[curUploadMerchandiseIndex.value],
-        imgList:newList
-      })
-      let {ctx:that, proxy} = getCurrentInstance()
-      that.$forceUpdate()
+      merchandiseList[curUploadMerchandiseIndex.value].imgList.push(res);
+
       ElMessage({
         message:'上传成功',
         type:'success'
       })
+      listFlag.value++;
     })
   }
 };
@@ -593,7 +652,7 @@ const beforeRemove: UploadProps["beforeRemove"] = (uploadFile, uploadFiles) => {
 
 // 添加商品
 function addMerchandise(){
-  console.log('add');
+  dialogVisible.value = true;
 /*   merchandiseList.push({
     merchandiseName: "",
     price: 0,
@@ -755,6 +814,82 @@ const jsonData = ref({});
     exportExcel(luckysheet.getAllSheets(), "下载");
   };
 
+  // 添加商品
+  const dialogVisible = ref(false)
+  const newMerchandise = reactive({
+    merchandiseName: '',
+    price: '',
+    description: '',
+    targeting:'',
+    strategy:''
+})
+
+  // 关闭窗口
+  const handleClose = (done: () => void) => {
+    ElMessageBox.confirm('商品信息未上传，确认要取消?')
+      .then(() => {
+        done()
+      })
+      .catch(() => {
+        // catch error
+      })
+  }
+
+  const fileInput2 = ref(null);
+  const imagePreviews = ref([]);
+
+  // 选中图片
+  function handleFileUpload(){
+    const files = fileInput2?.value.files;
+      // 遍历上传的文件并生成预览
+      for (let i = 0; i < files.length; i++) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          imagePreviews.value.push(e.target.result);
+        };
+        reader.readAsDataURL(files[i]);
+      }
+  }
+
+  const uploadImages = () => {
+      // 在这里可以进行图片上传的逻辑
+      // 例如：使用axios发送请求将图片上传到服务器
+      // 此处只是示例，实际操作需要根据你的后端逻辑进行处理
+      console.log('Uploading images:', imagePreviews.value);
+      // 清空预览
+      imagePreviews.value = [];
+    };
+
+  let listFlag = ref(0)
+
+  function uploadMerchandise(){
+    MerchantRequester.UploadProductInfo({...newMerchandise,merchantId:merchantInfo.value.id}).then(res => {
+      console.log('上传商品res',res);
+      merchandiseList.push({...res,imgList:[]} as any)
+      setTimeout(()=>{
+        listFlag.value++;
+      })
+      ElMessage({
+        message:'上传成功',
+        type:'success'
+      })
+      setTimeout(()=>{
+        dialogVisible.value = false
+      },1000)
+    })
+  }
+
+    //删除商品
+    function deleteProduct(index:any){
+    MerchantRequester.DeleteProduct({id:merchandiseList[index].id}).then(()=>{
+      ElMessage({
+        message:'删除成功',
+        type:'success'
+      })
+      merchandiseList.splice(index,1)
+      listFlag.value++;
+    })
+  }
 
 </script>
 

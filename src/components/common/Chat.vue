@@ -118,6 +118,7 @@
           </button>
         </div>
         </div>
+
   
         <el-divider v-if="(index == hisLen-1) && (commonStore.curRole == 'user')">以上为历史数据</el-divider>
       </div>

@@ -160,6 +160,22 @@ export class MerchantRequester {
         data
     })
 
+    // 上传商品信息
+    static UploadProductInfo = (data:any)=>requests({
+        url:'/merchandise/',
+        method:'post',
+        data
+    })
+
+    // 删除商品
+    static DeleteProduct = (data:any)=>requests({
+        url:'/merchandise/',
+        method:'delete',
+        params:{
+            ...data
+        }
+    })
+
 
 }
 
