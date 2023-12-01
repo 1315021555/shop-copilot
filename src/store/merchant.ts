@@ -36,8 +36,7 @@ export const useMerchantStore = defineStore('useMerchantStore',{
         curSessionInfo(state){
             return state.sessionList[state.curHisIndex]
         },
-
-
+        
     },
 
     actions:{

@@ -176,6 +176,22 @@ export class MerchantRequester {
         }
     })
 
+    // 获取商家轮播图
+    static GetMerchantCarousel = (data:{merchantId:number})=>requests({
+        url:'/merchant/carousel/list',
+        method:'get',
+        params:{
+            ...data
+        }
+    })
+
+    // 上传商家轮播图
+    static UploadMerchantCarousel = (data:{content:string,base64:string,merchantId:string})=>requests({
+        url:'/merchant/carousel/',
+        method:'post',
+        data
+    })
+
 
 }
 

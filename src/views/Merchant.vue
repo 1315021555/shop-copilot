@@ -1,7 +1,7 @@
 <template>
   <div class="wrap">
     <div class="accountBox">
-      <img src="../assets/img/logo.png" alt="" style="width: 60px; height: 60px">
+      <img :src="merchantInfo.coverUrl" alt="" style="width: 40; height: 50px; border-radius: 50%; margin: 10px;">
       <span>欢迎回来，{{ merchantInfo.merchantName }}</span>
       <el-button type="danger" class="exitBtn" @click="logout"
         >退出登录
@@ -153,7 +153,24 @@
                   <el-input v-model="shopInfo.logisticalArea"></el-input>
                 </el-form-item>
               </el-form>
-
+              <!-- 轮播图 -->
+              <div>
+                <el-form-item label="商店轮播图"></el-form-item>
+                <div  style="display:flex; width:80%; overflow-x: scroll;" :key="carouselKey">
+                  <div v-for="(preview, index) in curCarousel" >
+                    <img :src="preview" alt="curImg" style="max-width: 200px; margin: 5px;">
+                  </div>
+                </div>
+                <input type="file" ref="fileInput2" multiple @change="handleFileUpload">
+                
+                <h2>上传图片预览</h2>
+                <div v-if="imagePreviews.length" style="display:flex;">
+                  <div v-for="(preview, index) in imagePreviews" :key="index">
+                    <img :src="preview" alt="Uploaded Image" style="max-width: 200px; margin: 5px;">
+                  </div>
+                </div>
+                <el-button type="primary" @click="uploadImages">开始上传</el-button>
+              </div>
               <button class="finishBtn" @click="uploadMerchantInfo">完成</button>
             </el-tab-pane>
 
@@ -192,21 +209,6 @@
                       <img :src="img.imageUrl" alt="" style="{width:'100%',height:'100%' object-fit: cover;}">
                     </el-carousel-item>
                   </el-carousel>
-<!--                   <el-upload
-                    v-model:file-list="fileList"
-                    class="upload-demo"
-                    action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-                    :on-preview="handlePreview"
-                    :on-remove="handleRemove"
-                    list-type="picture"
-                  >
-                    <el-button type="primary">Click to upload</el-button>
-                    <template #tip>
-                      <div class="el-upload__tip">
-                        jpg/png files with a size less than 500kb
-                      </div>
-                    </template>
-                  </el-upload> -->
                 </el-form-item>
                 <input type="file" ref="fileInput" style="display: none" @change="handleFileInputChange" />
                 <el-button @click="uploadImage(index)" type="primary">上传图片</el-button>
@@ -299,17 +301,7 @@
       </el-form-item>
     </el-form>
     <!-- 图片区域 -->
-<!--     <div>
-      <input type="file" ref="fileInput2" multiple @change="handleFileUpload">
-      <el-button type="primary" @click="uploadImages">Upload Images</el-button>
 
-      <div v-if="imagePreviews.length">
-        <h2>上传图片预览</h2>
-        <div v-for="(preview, index) in imagePreviews" :key="index">
-          <img :src="preview" alt="Uploaded Image" style="max-width: 200px; margin: 5px;">
-        </div>
-      </div>
-    </div> -->
     <template #footer>
       <span class="dialog-footer">
         <el-button type="primary" @click="uploadMerchandise">
@@ -343,6 +335,9 @@ let activeName = ref("first");
 watch(activeName, (newV) => {
   if (newV == 'third') {
     commonStore.isHistoryOnly = true
+  }
+  else if (newV == 'fourth'){
+
   }
   else {
     commonStore.isHistoryOnly = false
@@ -391,6 +386,8 @@ async function setStyle(){
     botName: chatStyle.botName,
 }).then(res=>{
     console.log('设置成功',res);
+    MerchantStore.merchantInfo.chatStyle = chatStyle.style
+    MerchantStore.merchantInfo.botName = chatStyle.botName
     ElMessage({
       message:'设置成功',
       type:'success'
@@ -418,6 +415,7 @@ function setPreset_Init(){
 
   }).then(async res=>{
     console.log('设置问候语',res);
+    MerchantStore.merchantInfo.initialMsg = presetConfig.hello
     const curQAList:any = await MerchantRequester.GetPresetById({
       merchantId:MerchantStore.mechantId
     })
@@ -501,7 +499,7 @@ async function updateMerchantInfo(newInfo:any){
   }
   MerchantRequester.UpdateMechantInfo(reqInfo).then((res)=>{
     console.log('更新成功！',res);
-    MerchantStore.reloadMerchantInfo()
+
     // 重载聊天测试
     commonStore.updateChatFlag++;
     
@@ -585,10 +583,8 @@ const handleFileInputChange = async (e: Event) => {
     // 选中一个
     const file = target.files[0];
     // 处理选中的文件，可以在这里触发上传逻辑
-    console.log('选中的文件:', file);
     let base64String = await fileToBase64(file);
     base64String = base64String.split(',')[1];
-    console.log('图片的Base64编码:', base64String);
     MerchantRequester.UploadProductImage({
       content: file.name,
       merchandiseId:curUploadMerchandiseId.value,
@@ -616,8 +612,6 @@ const uploadImage = (index) => {
   curUploadMerchandiseId.value = merchandiseList[index].id
   if (fileInput.value[index]) {
     fileInput.value[index].click(); // 通过 .value 获取实际的 DOM 元素，然后调用 click 方法
-    // 转base64
-
   }
 };
 
@@ -699,6 +693,7 @@ function uploadMerchantInfo(){
     logisticalArea:shopInfo.logisticalArea,
   }).then(()=>{
     showSaveSuccuess()
+    reloadMerchantInfo()
   }).catch(err=>{
     console.log(err)
     ElMessage({
@@ -708,12 +703,23 @@ function uploadMerchantInfo(){
   })
 }
 
+let curCarousel = reactive([])
 function reloadMerchantInfo(){
   shopInfo.merchantName = merchantInfo.value.merchantName
   shopInfo.introduction = merchantInfo.value.introduction
   shopInfo.mainCategory = merchantInfo.value.mainCategory
   shopInfo.returnAndExchangeRules = merchantInfo.value.returnAndExchangeRules
   shopInfo.logisticalArea = merchantInfo.value.logisticalArea
+  curCarousel = []
+  MerchantRequester.GetMerchantCarousel({
+    merchantId:merchantInfo.value.id
+  }).then((res:any)=>{
+    console.log('商家轮播图：',res);
+    res.forEach((element:any) => {
+      curCarousel.push(element.imageUrl)
+    });
+    carouselKey.value++;
+  })
 }
 
 function reloadMerchandiseList(){
@@ -742,7 +748,6 @@ onMounted(() => {
   reloadMerchantInfo();
   // 获取商品信息
   reloadMerchandiseList();
-    
     console.log("表格：", luckysheet);
     luckysheet.create({
       container: "luckysheet",
@@ -840,7 +845,7 @@ const jsonData = ref({});
 
   // 选中图片
   function handleFileUpload(){
-    const files = fileInput2?.value.files;
+    const files = fileInput2.value.files;
       // 遍历上传的文件并生成预览
       for (let i = 0; i < files.length; i++) {
         const reader = new FileReader();
@@ -852,16 +857,47 @@ const jsonData = ref({});
   }
 
   const uploadImages = () => {
+    let PromiseList = []
+    if (imagePreviews.value.length== 0){
+      ElMessage({
+        message:'请选择要上传的图片',
+        type:'warning'
+      })
+      return 
+    }
+    imagePreviews.value.forEach((img,index) => {
+      PromiseList.push(MerchantRequester.UploadMerchantCarousel({
+        content:`轮播图${index}`,
+        base64:img.split(",")[1],
+        merchantId:merchantInfo.value.id
+      }))
+    });
+    Promise.all(PromiseList)
+      .then(res=>{
+        console.log(res);
+        ElMessage({ 
+          message:'上传成功',
+          type:'success'
+        })
+        reloadMerchantInfo()
+        imagePreviews.value = []
+
+      }).catch(err=>{
+        ElMessage({
+          message:'上传失败',
+          type:'error'
+        })
+      })
       // 在这里可以进行图片上传的逻辑
       // 例如：使用axios发送请求将图片上传到服务器
       // 此处只是示例，实际操作需要根据你的后端逻辑进行处理
       console.log('Uploading images:', imagePreviews.value);
       // 清空预览
-      imagePreviews.value = [];
+      // imagePreviews.value = [];
     };
 
   let listFlag = ref(0)
-
+  let carouselKey = ref(0)
   function uploadMerchandise(){
     MerchantRequester.UploadProductInfo({...newMerchandise,merchantId:merchantInfo.value.id}).then(res => {
       console.log('上传商品res',res);
